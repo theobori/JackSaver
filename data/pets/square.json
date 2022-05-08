@@ -1,0 +1,17 @@
+{
+    "content": [
+        "@@@@@",
+        "@@@@@",
+        "@@@@@",
+        "@@@@@"
+    ],
+    "name": "Square",
+    "color": 4,
+    "health": 50.0,
+    "damage": 0.0,
+    "level": 0.0,
+    "exp": 0.0,
+    "next_level_xp": 100.0,
+    "xp_per_second": 2.0,
+    "xp_earn_per_level": 0.5
+}
