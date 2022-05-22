@@ -1,4 +1,6 @@
-from typing import *
+"""rotate module"""
+
+from typing import List
 
 mirrors_symbols = {
     "\\":"/",
@@ -14,6 +16,10 @@ mirrors_symbols = {
 }
 
 def horizontal_symetry(content: List[str]) -> List[str]:
+    """
+        Rotate a sprite horizontaly (ascii art)
+    """
+
     ret = []
     max_size = len(max(content, key=len))
 
@@ -21,12 +27,14 @@ def horizontal_symetry(content: List[str]) -> List[str]:
         line = list(line[::-1])
         spaces = max_size - len(line)
 
-        for i, c in enumerate(line):
-            if (c in mirrors_symbols.keys()):
-                line[i] = mirrors_symbols[c]
+        for i, char in enumerate(line):
+            try:
+                line[i] = mirrors_symbols[char]
+            except KeyError:
+                continue
 
         line = "".join(line)
         line = " " * spaces + line
         ret += [line]
-    
-    return (ret)
+
+    return ret

@@ -13,5 +13,9 @@
     "exp": 0.0,
     "next_level_xp": 100.0,
     "xp_per_second": 2.0,
-    "xp_earn_per_level": 0.5
+    "xp_earn_per_level": 0.5,
+    "move_range": {
+        "x": 3,
+        "y": 0
+    }
 }

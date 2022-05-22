@@ -1,4 +1,6 @@
-class SpriteError(Exception):
+"""exception module"""
+
+class JackError(Exception):
     """
         Exception raised for errors for the sprites
     """

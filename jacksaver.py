@@ -1,10 +1,13 @@
 """JackSaver module"""
 
 import curses
-from src.sprite.pet import Pet
+import threading
+from sys import stderr
+from src.sprite.pet import Pet, Pets
 
 from src.sprite.sprite import Sprites
 from src.arguments.args import Parser
+from src.exceptions.exception import JackError
 
 class JackSaver:
     """
@@ -29,13 +32,19 @@ class JackSaver:
             Generating sprites (Sprites) groups aka threads
         """
 
-        for _ in range(self.args.count):
-            tmp_sprites = Sprites(self.stdscr)
-            for _ in range(self.args.sprite_per_thread):
-                sprite = Pet()
-                sprite.load_random()
-                tmp_sprites.add(sprite)
-            self.sprites_groups += [tmp_sprites]
+        for amount in range(0, self.args.count, self.args.sprite_per_thread):
+            tmp_pets = Pets(self.stdscr)
+
+            if (self.args.count - amount > self.args.sprite_per_thread):
+                _max = self.args.sprite_per_thread
+            else:
+                _max = self.args.count - amount
+
+            for _ in range(_max):
+                pet = Pet()
+                pet.load_random()
+                tmp_pets.add(pet)
+            self.sprites_groups += [tmp_pets]
 
     def run(self):
         """
@@ -50,6 +59,9 @@ class JackSaver:
 
         self.start_threads()
 
+        while 1:
+            pass
+
     def start_threads(self):
         """
             Call the method start from every thread
@@ -63,9 +75,12 @@ def main(stdscr: object):
     """
         Program main function
     """
+    try:
+        jack_saver = JackSaver(stdscr, args)
+        jack_saver.run()
+    except JackError as error:
+        print(error, file=stderr)
 
-    jack_saver = JackSaver(stdscr, args)
-    jack_saver.run()
 
 if __name__ == "__main__":
     parser = Parser()
