@@ -64,7 +64,3 @@ class Binds:
             return (False)
         
         return bind.try_call()
-    
-
-def hello(a: str):
-    print("hello " + a)
