@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from enum import Enum
-from time import sleep
+
 import json
 import uuid
 import threading
@@ -10,6 +10,8 @@ import threading
 from src.sprite.rotate import horizontal_symetry
 from src.exceptions.exception import JackError
 from src.utils.clock import Clock
+
+MUTEX = threading.Lock()
 
 @dataclass
 class Position:
@@ -38,8 +40,8 @@ class NeedLoad:
         This object is used to assign a value loaded from a file to a variable
     """
 
-    def __init__(self, __type: type):
-        self.type = __type
+    def __init__(self, _type: type):
+        self.type = _type
 
     def __repr__(self) -> str:
         return self.__class__.__name__
@@ -51,28 +53,21 @@ class NeedLoad:
 
         return self.type
 
-class Sprite:
+class BaseDrawable:
     """
-        This object details a sprite
+        Common sprite data
     """
-
-    left = True
-    right = False
 
     def __init__(self):
         self.id = uuid.uuid4()
         self.pos = Position(0, 0)
         self.size = Size(0, 0)
-        self.side = Side.LEFT
-
-        self.name = NeedLoad(str)
-        self.content = NeedLoad(list)
-        self.color = NeedLoad(int)
-
+    
     def load(self, data: json):
         """
             Load properties by setting up attributes the class
         """
+
         for attr in self.__dict__:
             value = self.__getattribute__(attr)
 
@@ -90,12 +85,47 @@ class Sprite:
             It will assign the class properties with ones in templates file
             example: (./data/pets/model.json)
         """
+
         data = {}
 
         with open(filepath, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         self.load(data)
+    
+    def set_pos(self, x: int, y: int):
+        """
+            Update the position
+        """
+
+        self.pos.x = x
+        self.pos.y = y
+
+    def init_size(self):
+        """
+            Initialize the size of the content
+        """
+
+        self.size.h = len(self.content)
+        self.size.w = max(self.content, key=len)
+
+class Sprite(BaseDrawable):
+    """
+        This object details a sprite
+    """
+
+    def __init__(self, **kwargs: object):
+        super().__init__()
+        self.side = Side.LEFT
+
+        self.name = NeedLoad(str)
+        self.content = NeedLoad(list)
+        self.color = NeedLoad(int)
+
+        try:
+            self.load(kwargs)
+        except JackError as error:
+            pass
 
     def horizontal_rotate(self):
         """
@@ -123,10 +153,9 @@ class Sprite:
         """
             Drawing the sprite to stdscr
         """
-
         for y, line in enumerate(self.content):
             for x, char in enumerate(line):
-                if (char in (" ", "\t")):
+                if char in (" ", "\t"):
                     continue
                 try:
                     stdscr.addstr(self.pos.y + y, self.pos.x + x, char)
@@ -147,7 +176,7 @@ class Sprites(threading.Thread):
     """
 
     def __init__(self, stdscr: object):
-        threading.Thread.__init__(self, target = self.run, args=(stdscr, ))
+        threading.Thread.__init__(self, target = self.run)
 
         self.objs = []
         self.stdscr = stdscr
@@ -158,19 +187,11 @@ class Sprites(threading.Thread):
             Append a sprite to the group
         """
 
-        self.objs += [sprite]
+        self.objs.append(sprite)
 
     def run(self):
         """
             This method will be call in the main loop every k seconds
         """
 
-        while 1:
-            sleep(0.5)
-
-            self.stdscr.clear()
-
-            for sprite in self.objs:
-                sprite.run(self.stdscr)
-
-            self.stdscr.refresh()
+        [sprite.run(self.stdscr) for sprite in self.objs]

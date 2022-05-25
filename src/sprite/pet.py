@@ -4,7 +4,7 @@ import os
 import random
 from random import randrange
 
-from src.sprite.sprite import NeedLoad, Sprite, Sprites, Side
+from src.sprite.sprite import NeedLoad, Sprite, Sprites, Side, Position
 
 class Pet(Sprite):
     """
@@ -14,7 +14,7 @@ class Pet(Sprite):
     def __init__(self):
         super().__init__()
 
-        self.next_pos = self.pos
+        self.next_pos = Position(0,0)
 
         self.level = NeedLoad(float)
         self.exp = NeedLoad(float)
@@ -29,11 +29,16 @@ class Pet(Sprite):
         """
 
         rows, cols = stdscr.getmaxyx()
-        move_x = randrange(-1 * self.move_range["x"], self.move_range["x"] or 1)
-        move_y = randrange(-1 * self.move_range["y"], self.move_range["y"] or 1)
+        move_x = randrange(-1 * self.move_range["x"] + 1, self.move_range["x"] or 2)
+        move_y = randrange(-1 * self.move_range["y"], self.move_range["y"] or 2)
 
-        self.next_pos.x = (self.pos.x + move_x) % cols
-        self.next_pos.y = (self.pos.y + move_y) % rows
+        self.next_pos.x = self.pos.x + move_x
+        self.next_pos.y = self.pos.y + move_y
+
+        if self.next_pos.x < 0 or self.next_pos.x > (cols - self.size.w):
+            self.next_pos.x = self.pos.x
+        if self.next_pos.y < 0 or self.next_pos.y > (cols - self.size.w):
+            self.next_pos.y = self.pos.y
 
     def load_random(self, dir_path: str="./data/pets/"):
         """
@@ -51,25 +56,25 @@ class Pet(Sprite):
             Update the pet values
         """
 
-        if (self.pos.x == self.next_pos.x):
-            if (self.pos.y == self.next_pos.y):
+        if self.pos.x == self.next_pos.x:
+            if self.pos.y == self.next_pos.y:
                 self.random_next_pos(stdscr)
         
-        if (self.pos.x < self.next_pos.x):
+        if self.pos.x < self.next_pos.x:
             if (self.side == Side.LEFT):
                 self.side = Side.RIGHT
                 self.horizontal_rotate()
-            self.pos.x += self.move_range["x"]
-        else:
-            if (self.side == Side.RIGHT):
+            self.pos.x += 1
+        elif self.pos.x > self.next_pos.x:
+            if self.side == Side.RIGHT:
                 self.side = Side.LEFT
                 self.horizontal_rotate()
-            self.pos.x -= self.move_range["x"]
+            self.pos.x -= 1
 
-        if (self.pos.y < self.next_pos.y):
-            self.pos.y += self.move_range["y"]
-        else:
-            self.pos.y -= self.move_range["y"]
+        if self.pos.y < self.next_pos.y:
+            self.pos.y += 1
+        elif self.pos.y > self.next_pos.y:
+            self.pos.y -= 1
 
     def run(self, stdscr: object):
         """
@@ -86,20 +91,3 @@ class Pets(Sprites):
 
     def __init__(self, stdscr: object):
         super().__init__(stdscr)
-
-    # # remove ?
-    # def run(self):
-    #     """
-    #         Overriding the class Sprites method
-    #     """
-
-    #     while 1:
-    #         if (not self.clock.check()):
-    #             continue
-
-            
-
-    #         for sprite in self.objs:
-    #             sprite.run(self.stdscr)
-
-    #         self.stdscr.refresh()

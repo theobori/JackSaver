@@ -2,7 +2,7 @@
 
 from typing import List
 
-mirrors_symbols = {
+MIRRORS_SYMBOLS = {
     "\\":"/",
     "/":"\\",
     "(":")",
@@ -29,12 +29,12 @@ def horizontal_symetry(content: List[str]) -> List[str]:
 
         for i, char in enumerate(line):
             try:
-                line[i] = mirrors_symbols[char]
+                line[i] = MIRRORS_SYMBOLS[char]
             except KeyError:
                 continue
 
         line = "".join(line)
         line = " " * spaces + line
-        ret += [line]
+        ret.append(line)
 
     return ret

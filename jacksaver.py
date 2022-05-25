@@ -1,86 +1,147 @@
-"""JackSaver module"""
+"""JackSaver main file"""
 
 import curses
-import threading
-from sys import stderr
-from src.sprite.pet import Pet, Pets
+import time
+from sys import stderr, exit
 
-from src.sprite.sprite import Sprites
+from src.sprite.pet import Pet, Pets
+from src.sprite.sprite import Sprites, Sprite
 from src.arguments.args import Parser
 from src.exceptions.exception import JackError
+from src.utils.repeat import RepeatFunc
+from src.keys.binds import Binds
 
-class JackSaver:
+class JackSaver(Binds):
     """
         This object contains every main functions for the screen saver
     """
 
     def __init__(self, stdscr: object, cli_args: object):
+        super().__init__()
+
         self.stdscr = stdscr
         self.args = cli_args
-        self.sprites_groups = []
+        self.drawables_groups = []
+        self.drawables = {}
+        self.loop_func = None
 
         self.check_args()
-        self.init_sprites()
+        self.init_drawables()
+        self.init_binds()
 
     def check_args(self):
         """
             TODO
         """
 
+    def init_binds(self):
+        """
+            Adding key binds to the Binds class
+        """
+
+        self.add_bind("q", self.leave)
+
     def init_sprites(self):
         """
-            Generating sprites (Sprites) groups aka threads
+            Generating additional sprites (Sprite) (not pets)
         """
 
-        for amount in range(0, self.args.count, self.args.sprite_per_thread):
-            tmp_pets = Pets(self.stdscr)
+        # self.drawables["test"] = Sprite(
+        #     name="cloud",
+        #     color=0,
+        #     content=["test"]
+        # )
+        # self.drawables["test2"] = Sprite(
+        #     name="cloud",
+        #     color=0,
+        #     content=["test"]
+        # )
 
-            if (self.args.count - amount > self.args.sprite_per_thread):
-                _max = self.args.sprite_per_thread
-            else:
-                _max = self.args.count - amount
+    def init_pets(self):
+        """
+            Generating pets object
+        """
 
-            for _ in range(_max):
-                pet = Pet()
-                pet.load_random()
-                tmp_pets.add(pet)
-            self.sprites_groups += [tmp_pets]
+        for pet_count in range(self.args.count):
+            pet = Pet()
+            pet.load_random()
+            self.drawables[f"pet_{pet_count}"] = pet
 
-    def run(self):
+    def init_drawables(self):
+        """
+            Generating every drawable object
+        """
+
+        pet_in = 0
+        sprites = Sprites(self.stdscr)
+
+        self.init_sprites()
+        self.init_pets()
+
+        for name, drawable in self.drawables.items():
+            if (pet_in >= self.args.sprite_per_thread):
+                self.drawables_groups.append(sprites)
+                sprites = Sprites(self.stdscr)
+                pet_in = 0
+            sprites.add(drawable)
+            pet_in += 1
+        
+        if not self.drawables_groups or not self.drawables_groups[-1] is sprites:
+            self.drawables_groups.append(sprites)
+
+    def loop(self):
+        """
+            Function called every n seconds
+        """
+
+        self.stdscr.clear()
+        self.run_threads()
+        self.stdscr.refresh()
+
+    def run(self, n: int = 0.2):
         """
             Main function for the screen saver
         """
 
         curses.nocbreak()
+        curses.raw()
         self.stdscr.keypad(False)
         curses.echo()
-        self.stdscr.clear()
-        self.stdscr.refresh()
 
-        self.start_threads()
+        self.loop_func = RepeatFunc(n, self.loop)
 
         while 1:
-            pass
+            key = self.stdscr.getkey()
+            self.try_call_from_bind(key)
 
-    def start_threads(self):
+            if (key == "q"):
+                exit()
+            
+    def leave(self) -> int:
+        """
+            Kill process
+        """
+
+        self.loop_func.stop()
+
+    def run_threads(self):
         """
             Call the method start from every thread
             It will executes it
         """
 
-        for thread in self.sprites_groups:
-            thread.start()
+        [thread.run() for thread in self.drawables_groups]
 
 def main(stdscr: object):
     """
         Program main function
     """
+
     try:
         jack_saver = JackSaver(stdscr, args)
-        jack_saver.run()
+        jack_saver.run(0.1)
     except JackError as error:
         print(error, file=stderr)
-
 
 if __name__ == "__main__":
     parser = Parser()
