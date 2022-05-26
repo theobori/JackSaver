@@ -28,15 +28,16 @@ class Pet(Sprite):
             Get a new random pos where the pet must go
         """
 
-        rows, cols = stdscr.getmaxyx()
+        _, cols = stdscr.getmaxyx()
         move_x = randrange(-1 * self.move_range["x"] + 1, self.move_range["x"] or 2)
-        move_y = randrange(-1 * self.move_range["y"], self.move_range["y"] or 2)
+        move_y = randrange(-1 * self.move_range["y"], self.move_range["y"] or 1)
 
         self.next_pos.x = self.pos.x + move_x
         self.next_pos.y = self.pos.y + move_y
 
         if self.next_pos.x < 0 or self.next_pos.x > (cols - self.size.w):
             self.next_pos.x = self.pos.x
+
         if self.next_pos.y < 0 or self.next_pos.y > (cols - self.size.w):
             self.next_pos.y = self.pos.y
 
@@ -51,10 +52,27 @@ class Pet(Sprite):
 
         self.load_from_file(dir_path + filename)
     
+    def move_to_ground(self, stdscr: object):
+        """
+            Place the sprite on the "ground", on the bottom of the screen
+        """
+    
+        rows, _ = stdscr.getmaxyx()
+
+        y_ground_pos = rows - self.size.h
+
+        if (self.pos.y == y_ground_pos):
+            return
+
+        self.pos.y = y_ground_pos
+        self.next_pos.y = self.pos.y
+
     def update(self, stdscr: object):
         """
             Update the pet values
         """
+
+        self.move_to_ground(stdscr)
 
         if self.pos.x == self.next_pos.x:
             if self.pos.y == self.next_pos.y:

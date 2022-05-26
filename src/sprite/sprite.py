@@ -6,12 +6,11 @@ from enum import Enum
 import json
 import uuid
 import threading
+import curses
 
 from src.sprite.rotate import horizontal_symetry
 from src.exceptions.exception import JackError
 from src.utils.clock import Clock
-
-MUTEX = threading.Lock()
 
 @dataclass
 class Position:
@@ -79,6 +78,8 @@ class BaseDrawable:
             if value.gettype() != type(data[attr]):
                 raise JackError(f"Wrong type: {attr}")
             self.__setattr__(attr, data[attr])
+        
+        self.init_size()
 
     def load_from_file(self, filepath: str):
         """
@@ -107,7 +108,7 @@ class BaseDrawable:
         """
 
         self.size.h = len(self.content)
-        self.size.w = max(self.content, key=len)
+        self.size.w = len(max(self.content, key=len))
 
 class Sprite(BaseDrawable):
     """
@@ -153,12 +154,18 @@ class Sprite(BaseDrawable):
         """
             Drawing the sprite to stdscr
         """
+
         for y, line in enumerate(self.content):
             for x, char in enumerate(line):
                 if char in (" ", "\t"):
                     continue
                 try:
-                    stdscr.addstr(self.pos.y + y, self.pos.x + x, char)
+                    stdscr.addstr(
+                        self.pos.y + y,
+                        self.pos.x + x,
+                        char,
+                        curses.color_pair(self.color)
+                    )
                 except Exception:
                     continue
 

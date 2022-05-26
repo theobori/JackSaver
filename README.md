@@ -4,10 +4,6 @@
 
 Jack saver is a terminal screen saver based on the curses library
 
-## Screenshots
-
-_TODO_
-
 ## How to build and run ?
 
 1. Get a python3 environment
@@ -16,3 +12,12 @@ _TODO_
 python3 -m pip install -r requirements.txt
 ```
 3. Run the script named `jacksaver.py`
+
+## Docker
+
+Build the image and run it by name
+
+```
+docker build -t jack_saver .
+docker run -it -d jack_saver
+```

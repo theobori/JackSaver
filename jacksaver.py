@@ -25,14 +25,20 @@ class JackSaver(Binds):
         self.drawables = {}
         self.loop_func = None
 
-        self.check_args()
-        self.init_drawables()
-        self.init_binds()
+        self.init()
 
-    def check_args(self):
+    def init_colors(self):
         """
-            TODO
+            Generating pair colors
         """
+
+        curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLACK)
+        curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
+        curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK)
+        curses.init_pair(4, curses.COLOR_BLUE, curses.COLOR_BLACK)
+        curses.init_pair(5, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+        curses.init_pair(6, curses.COLOR_CYAN, curses.COLOR_BLACK)
+        curses.init_pair(7, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
 
     def init_binds(self):
         """
@@ -51,6 +57,7 @@ class JackSaver(Binds):
         #     color=0,
         #     content=["test"]
         # )
+
         # self.drawables["test2"] = Sprite(
         #     name="cloud",
         #     color=0,
@@ -89,6 +96,15 @@ class JackSaver(Binds):
         if not self.drawables_groups or not self.drawables_groups[-1] is sprites:
             self.drawables_groups.append(sprites)
 
+    def init(self):
+        """
+            Calling initializers
+        """
+    
+        self.init_drawables()
+        self.init_binds()
+        self.init_colors()
+
     def loop(self):
         """
             Function called every n seconds
@@ -105,6 +121,7 @@ class JackSaver(Binds):
 
         curses.nocbreak()
         curses.raw()
+        curses.curs_set(0)
         self.stdscr.keypad(False)
         curses.echo()
 
