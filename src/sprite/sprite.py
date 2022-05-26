@@ -143,11 +143,6 @@ class Sprite(BaseDrawable):
         self.on_ground = NeedLoad(bool, False)
         super().__init__(**kwargs)
 
-        try:
-            self.load(kwargs)
-        except JackError:
-            pass
-
     def horizontal_rotate(self):
         """
             It makes a horizontal symetry with the sprite
