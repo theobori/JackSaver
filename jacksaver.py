@@ -110,7 +110,7 @@ class JackSaver(Binds):
             Function called every n seconds
         """
 
-        self.stdscr.clear()
+        self.stdscr.erase()
         self.run_threads()
         self.stdscr.refresh()
 

@@ -52,13 +52,11 @@ class Pet(Sprite):
 
         self.load_from_file(dir_path + filename)
     
-    def move_to_ground(self, stdscr: object):
+    def move_to_ground(self, rows: int):
         """
             Place the sprite on the "ground", on the bottom of the screen
         """
     
-        rows, _ = stdscr.getmaxyx()
-
         y_ground_pos = rows - self.size.h
 
         if (self.pos.y == y_ground_pos):
@@ -67,12 +65,40 @@ class Pet(Sprite):
         self.pos.y = y_ground_pos
         self.next_pos.y = self.pos.y
 
+    def keep_inside(self, cols: int):
+        """
+            Manage the terminal width
+        """
+
+        x_pos = cols - self.size.w
+        pos_changed = True
+
+        if self.pos.x >= x_pos:
+            self.pos.x = x_pos
+        elif self.pos.x < 0:
+            self.pos.x = 0
+        else:
+            pos_changed = False
+
+        if pos_changed:
+            self.next_pos.x = self.pos.x
+
+    def term_size_handling(self, stdscr: object):
+        """
+            It keeps the pet inside the terminal box
+        """
+
+        rows, cols = stdscr.getmaxyx()
+
+        self.move_to_ground(rows)
+        self.keep_inside(cols)
+
     def update(self, stdscr: object):
         """
             Update the pet values
         """
 
-        self.move_to_ground(stdscr)
+        self.term_size_handling(stdscr)
 
         if self.pos.x == self.next_pos.x:
             if self.pos.y == self.next_pos.y:
