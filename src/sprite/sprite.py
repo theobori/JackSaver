@@ -1,5 +1,6 @@
 """sprite module"""
 
+from typing import Any
 from dataclasses import dataclass
 from enum import Enum
 
@@ -31,6 +32,10 @@ class Size:
     h: int
 
 class Side(Enum):
+    """
+        Contains every possible side for a sprite
+    """
+
     LEFT = 0
     RIGHT = 1
 
@@ -39,8 +44,9 @@ class NeedLoad:
         This object is used to assign a value loaded from a file to a variable
     """
 
-    def __init__(self, _type: type):
+    def __init__(self, _type: type, value: Any = None):
         self.type = _type
+        self.default = value
 
     def __repr__(self) -> str:
         return self.__class__.__name__
@@ -57,11 +63,18 @@ class BaseDrawable:
         Common sprite data
     """
 
-    def __init__(self):
+    def __init__(self, data: dict = None, path: str = None):
         self.id = uuid.uuid4()
         self.pos = Position(0, 0)
         self.size = Size(0, 0)
-    
+
+        self.content = NeedLoad(list)
+
+        if data:
+            self.load(data)
+        elif path:
+            self.load_from_file(path)
+
     def load(self, data: json):
         """
             Load properties by setting up attributes the class
@@ -69,16 +82,23 @@ class BaseDrawable:
 
         for attr in self.__dict__:
             value = self.__getattribute__(attr)
+            attr_value = None
 
-            if type(value) != NeedLoad:
+            if not isinstance(value, NeedLoad):
                 continue
 
             if not attr in data.keys():
-                raise JackError(f"Missing attribute: {attr}")
-            if value.gettype() != type(data[attr]):
-                raise JackError(f"Wrong type: {attr}")
-            self.__setattr__(attr, data[attr])
-        
+                if value.default is None:
+                    raise JackError(f"Missing attribute: {attr}")
+                attr_value = value.default
+            else:
+                attr_value = data[attr]
+
+            if value.gettype() != type(attr_value):
+                raise JackError(f"Wrong type for {attr}")
+
+            self.__setattr__(attr, attr_value)
+
         self.init_size()
 
     def load_from_file(self, filepath: str):
@@ -93,7 +113,7 @@ class BaseDrawable:
             data = json.load(f)
 
         self.load(data)
-    
+
     def set_pos(self, x: int, y: int):
         """
             Update the position
@@ -116,16 +136,16 @@ class Sprite(BaseDrawable):
     """
 
     def __init__(self, **kwargs: object):
-        super().__init__()
         self.side = Side.LEFT
 
         self.name = NeedLoad(str)
-        self.content = NeedLoad(list)
         self.color = NeedLoad(int)
+        self.on_ground = NeedLoad(bool, False)
+        super().__init__(**kwargs)
 
         try:
             self.load(kwargs)
-        except JackError as error:
+        except JackError:
             pass
 
     def horizontal_rotate(self):
@@ -143,12 +163,27 @@ class Sprite(BaseDrawable):
         self.pos.x += x
         self.pos.y += y
 
+    def move_to_ground(self, rows: int):
+        """
+            Place the sprite on the "ground", on the bottom of the screen
+        """
+
+        y_ground_pos = rows - self.size.h
+
+        if self.pos.y == y_ground_pos:
+            return
+
+        self.pos.y = y_ground_pos
+
     def update(self, stdscr: object):
         """
             Update the sprite values
         """
 
-        pass
+        rows, cols = stdscr.getmaxyx()
+
+        if self.on_ground:
+            self.move_to_ground(rows)
 
     def draw(self, stdscr: object):
         """
@@ -183,7 +218,7 @@ class Sprites(threading.Thread):
     """
 
     def __init__(self, stdscr: object):
-        threading.Thread.__init__(self, target = self.run)
+        threading.Thread.__init__(self, target=self.run)
 
         self.objs = []
         self.stdscr = stdscr

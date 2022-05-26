@@ -1,4 +1,4 @@
-"""rotate module"""
+"""rotate tools"""
 
 from typing import List
 

@@ -11,10 +11,9 @@ class Pet(Sprite):
         Default object that represents a pet
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs: object):
 
-        self.next_pos = Position(0,0)
+        self.next_pos = Position(0, 0)
 
         self.level = NeedLoad(float)
         self.exp = NeedLoad(float)
@@ -22,13 +21,13 @@ class Pet(Sprite):
         self.xp_per_second = NeedLoad(float)
         self.xp_earn_per_level = NeedLoad(float)
         self.move_range = NeedLoad(dict)
+        super().__init__(**kwargs)
 
-    def random_next_pos(self, stdscr: object):
+    def random_next_pos(self, rows: int, cols: int):
         """
             Get a new random pos where the pet must go
         """
 
-        _, cols = stdscr.getmaxyx()
         move_x = randrange(-1 * self.move_range["x"] + 1, self.move_range["x"] or 2)
         move_y = randrange(-1 * self.move_range["y"], self.move_range["y"] or 1)
 
@@ -41,7 +40,7 @@ class Pet(Sprite):
         if self.next_pos.y < 0 or self.next_pos.y > (cols - self.size.w):
             self.next_pos.y = self.pos.y
 
-    def load_random(self, dir_path: str="./data/pets/"):
+    def load_random(self, dir_path: str = "./data/pets/"):
         """
             Loading a random pet
         """
@@ -51,18 +50,19 @@ class Pet(Sprite):
         filename = random.choice(pets)
 
         self.load_from_file(dir_path + filename)
-    
-    def move_to_ground(self, rows: int):
+
+    def move_to_ground(self, ground_y: int):
         """
+            Overriding the Sprite method
             Place the sprite on the "ground", on the bottom of the screen
         """
-    
-        y_ground_pos = rows - self.size.h
 
-        if (self.pos.y == y_ground_pos):
+        y_pet_pos = ground_y - self.size.h
+
+        if self.pos.y == y_pet_pos:
             return
 
-        self.pos.y = y_ground_pos
+        self.pos.y = y_pet_pos
         self.next_pos.y = self.pos.y
 
     def keep_inside(self, cols: int):
@@ -83,12 +83,10 @@ class Pet(Sprite):
         if pos_changed:
             self.next_pos.x = self.pos.x
 
-    def term_size_handling(self, stdscr: object):
+    def term_size_handling(self, rows: int, cols: int):
         """
             It keeps the pet inside the terminal box
         """
-
-        rows, cols = stdscr.getmaxyx()
 
         self.move_to_ground(rows)
         self.keep_inside(cols)
@@ -98,14 +96,15 @@ class Pet(Sprite):
             Update the pet values
         """
 
-        self.term_size_handling(stdscr)
+        rows, cols = stdscr.getmaxyx()
+        self.term_size_handling(rows, cols)
 
         if self.pos.x == self.next_pos.x:
             if self.pos.y == self.next_pos.y:
-                self.random_next_pos(stdscr)
-        
+                self.random_next_pos(rows, cols)
+
         if self.pos.x < self.next_pos.x:
-            if (self.side == Side.LEFT):
+            if self.side == Side.LEFT:
                 self.side = Side.RIGHT
                 self.horizontal_rotate()
             self.pos.x += 1

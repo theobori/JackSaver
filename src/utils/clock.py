@@ -7,7 +7,7 @@ class Clock:
         This class will be used as a timer
     """
 
-    def __init__(self, delay: float= 1):
+    def __init__(self, delay: float = 1):
         self.clock = time.time()
         self.delay = delay
 
@@ -18,7 +18,8 @@ class Clock:
 
         current_time = time.time()
 
-        if (current_time - self.clock < self.delay):
-            return (False)
+        if current_time - self.clock < self.delay:
+            return False
+
         self.clock = current_time
-        return (True)
+        return True

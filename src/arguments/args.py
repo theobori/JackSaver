@@ -1,7 +1,15 @@
+"""args parsing"""
+
 from argparse import ArgumentParser
-from sys import stderr
+from sys import stderr, exit
+import re
+
+SCHEME_REGEX = re.compile(r"(^[^\(]+)\(([\d+^\)]+)\)")
 
 class Parser(ArgumentParser):
+    """
+        This class manages the command line argument
+    """
 
     def __init__(self) -> None:
         super().__init__()
@@ -32,8 +40,34 @@ class Parser(ArgumentParser):
             type=int, default=4,
             help="Amount of sprite managed by a single thread"
         )
-        # self.add_argument(
-        #     "-s", "--schema",
-        #     type=str, default="random",
-        #     help="Schema that describe which pet will spawn"
-        # )
+        self.add_argument(
+            "-s", "--schema",
+            type=str, default="",
+            help="Schema that describe which pet will spawn"
+        )
+
+
+def parse_cli_scheme(data: str) -> dict:
+    """
+        Parse the command line argument
+        and generate a dict
+    """
+
+    schemes = data.split(" ")
+    ret = {}
+
+    for scheme in schemes:
+        scheme = SCHEME_REGEX.findall(scheme)
+
+        if not scheme:
+            continue
+
+        name, amount = scheme[0]
+        amount = int(amount)
+
+        if not name in ret.keys():
+            ret[name] = amount
+        else:
+            ret[name] += amount
+
+    return ret

@@ -1,4 +1,6 @@
-import threading 
+"""repeat module"""
+
+import threading
 from typing import Callable
 
 class RepeatFunc:
@@ -13,6 +15,8 @@ class RepeatFunc:
         self.args = args
         self.kwargs = kwargs
         self.callback(*self.args, **self.kwargs)
+        self.is_running = False
+
         self.start()
 
     def _run(self):
