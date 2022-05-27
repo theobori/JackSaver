@@ -3,13 +3,15 @@
 import curses
 import os
 from sys import stderr, exit
+from datetime import datetime
 
 from src.sprite.pet import Pet
-from src.sprite.sprite import Sprites, Sprite
+from src.sprite.sprite import Position, Size, Sprites, Sprite
 from src.arguments.args import Parser, parse_cli_scheme
 from src.exceptions.exception import JackError
 from src.utils.repeat import RepeatFunc
 from src.hotkeys.binds import Binds
+from src.sprite.box import Boxes, Box
 
 class JackSaver(Binds):
     """
@@ -23,6 +25,7 @@ class JackSaver(Binds):
         self.args = cli_args
         self.drawables_groups = []
         self.drawables = {}
+        self.boxes = Boxes()
         self.loop_func = None
 
         self.init()
@@ -46,6 +49,12 @@ class JackSaver(Binds):
         """
 
         self.add_bind("q", self.leave)
+        self.add_bind("c", self.boxes.switch_selected)
+        self.add_bind("d", self.boxes.move_selected, self.stdscr, 1, 0)
+        self.add_bind("a", self.boxes.move_selected, self.stdscr, -1, 0)
+        self.add_bind("w", self.boxes.move_selected, self.stdscr, 0, -1)
+        self.add_bind("s", self.boxes.move_selected, self.stdscr, 0, 1)
+        self.add_bind("n", self.boxes.select_next)
 
     def init_sprites(self):
         """
@@ -67,6 +76,17 @@ class JackSaver(Binds):
             cloud.move_to_ground(rows)
             cloud.set_pos(x, 0)
             self.drawables[f"cloud_{x}"] = cloud
+    
+    def init_boxes(self):
+        """
+            Generating the text boxes
+        """
+
+        clock = Box("clock", self.stdscr, Position(0, 0), Size(9, 2))
+        self.boxes.add(clock)
+
+        version = Box("version", self.stdscr, Position(0, 3), Size(6, 2), "v 0.1")
+        self.boxes.add(version)
 
     def load_scheme(self, pets_path: str = "./data/pets/"):
         """
@@ -130,25 +150,41 @@ class JackSaver(Binds):
             Calling initializers
         """
 
+        self.init_boxes()
         self.init_drawables()
         self.init_binds()
         JackSaver.init_colors()
+
+    def update(self):
+        """
+            Update stuff in the main thread,
+            like the boxes, etc...
+        """
+
+        _time = str(datetime.now())[11:-7]
+
+        self.boxes["clock"].setContent(_time)
 
     def loop(self):
         """
             Function called every n seconds
         """
 
-        self.stdscr.erase()
+        self.stdscr.clear()
+
         self.run_threads()
+        self.update()
+        self.boxes.run()
+
         self.stdscr.refresh()
 
-    def run(self, n: int = 0.2):
+    def run(self, n: int = 0.1):
         """
             Main function for the screen saver
         """
 
         curses.nocbreak()
+        curses.noecho()
         curses.raw()
         curses.curs_set(0)
         self.stdscr.keypad(False)
@@ -185,7 +221,7 @@ def main(stdscr: object):
 
     try:
         jack_saver = JackSaver(stdscr, args)
-        jack_saver.run(0.1)
+        jack_saver.run(0.08)
     except JackError as error:
         print(error, file=stderr)
 

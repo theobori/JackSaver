@@ -58,15 +58,42 @@ class NeedLoad:
 
         return self.type
 
-class BaseDrawable:
+class MinimalObject:
+    """
+        Strict minimum for an object:
+            - Id
+            - Position
+            - Size
+    """
+
+    def __init__(self, x: int = 0, y: int = 0, w: int = 0, h: int = 0):
+        self.id = uuid.uuid4()
+        self.pos = Position(x, y)
+        self.size = Size(w, h)
+    
+    def setPosition(self, x: int, y: int):
+        """
+            Changing the object position
+        """
+    
+        self.pos.x = x
+        self.pos.y = y
+    
+    def setSize(self, w: int, h: int):
+        """
+            Changing the object size
+        """
+    
+        self.size.w = w
+        self.size.h = h
+
+class BaseDrawable(MinimalObject):
     """
         Common sprite data
     """
 
     def __init__(self, data: dict = None, path: str = None):
-        self.id = uuid.uuid4()
-        self.pos = Position(0, 0)
-        self.size = Size(0, 0)
+        super().__init__()
 
         self.content = NeedLoad(list)
 
