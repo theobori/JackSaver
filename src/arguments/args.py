@@ -36,9 +36,9 @@ class Parser(ArgumentParser):
             help="Amount of pet"
         )
         self.add_argument(
-            "-x", "--sprite_per_thread",
+            "-x", "--sprite_per_group",
             type=int, default=4,
-            help="Amount of sprite managed by a single thread"
+            help="Amount of sprite managed by a single group"
         )
         self.add_argument(
             "-s", "--schema",

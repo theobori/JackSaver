@@ -175,7 +175,7 @@ class JackSaver(Binds):
 
         self.update()
         for drawable_group in self.drawables_groups:
-            drawable_group.draw()
+            drawable_group.run()
         self.boxes.run()
 
         self.stdscr.refresh()
@@ -192,7 +192,6 @@ class JackSaver(Binds):
         self.stdscr.keypad(False)
         curses.echo()
 
-        self.run_threads()
         self.loop_func = RepeatFunc(n, self.loop)
 
         while 1:
@@ -208,17 +207,6 @@ class JackSaver(Binds):
         """
 
         self.loop_func.stop()
-        for x in self.drawables_groups:
-            x._stop()
-
-    def run_threads(self):
-        """
-            Call the method start from every thread
-            It will executes it
-        """
-
-        for thread in self.drawables_groups:
-            thread.start()
 
 def main(stdscr: object):
     """

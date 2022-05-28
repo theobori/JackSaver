@@ -227,14 +227,12 @@ class Sprite(BaseDrawable):
                 except Exception:
                     continue
 
-class Sprites(threading.Thread):
+class Sprites():
     """
         This object groups and manipulates sprites
     """
 
     def __init__(self, stdscr: object):
-        threading.Thread.__init__(self, target=self.update)
-
         self.objs = []
         self.stdscr = stdscr
 
@@ -245,20 +243,11 @@ class Sprites(threading.Thread):
 
         self.objs.append(sprite)
 
-    def update(self):
+    def run(self):
         """
             This method will be call in the main loop every k seconds
         """
 
-        while 1:
-            for sprite in self.objs:
-                sprite.update(self.stdscr)
-            sleep(0.1)
-
-    def draw(self):
-        """
-            Draw every sprite in this group
-        """
-
         for sprite in self.objs:
+            sprite.update(self.stdscr)
             sprite.draw(self.stdscr)
