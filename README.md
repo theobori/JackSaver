@@ -25,13 +25,13 @@ docker run -it -d jack_saver
 ## Flags
 
 ```bash
-usage: jacksaver.py [-h] [-c COUNT] [-x SPRITE_PER_THREAD] [-s SCHEMA]
+usage: jacksaver.py [-h] [-c COUNT] [-x sprite_per_group] [-s SCHEMA]
 
 optional arguments:
   -h, --help            show this help message and exit
   -c COUNT, --count COUNT
                         Amount of pet
-  -x SPRITE_PER_THREAD, --sprite_per_thread SPRITE_PER_THREAD
+  -x sprite_per_group, --sprite_per_group sprite_per_group
                         Amount of sprite managed by a single thread
   -s SCHEMA, --schema SCHEMA
                         Schema that describe which pet will spawn

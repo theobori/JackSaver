@@ -136,7 +136,7 @@ class JackSaver(Binds):
         self.init_pets()
 
         for name, drawable in self.drawables.items():
-            if pet_in >= self.args.sprite_per_thread:
+            if pet_in >= self.args.sprite_per_group:
                 self.drawables_groups.append(sprites)
                 sprites = Sprites(self.stdscr)
                 pet_in = 0
@@ -206,6 +206,7 @@ class JackSaver(Binds):
             Kill process
         """
 
+        curses.endwin()
         self.loop_func.stop()
 
 def main(stdscr: object):
