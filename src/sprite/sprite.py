@@ -1,5 +1,6 @@
 """sprite module"""
 
+from time import sleep
 from typing import Any
 from dataclasses import dataclass
 from enum import Enum
@@ -11,7 +12,6 @@ import curses
 
 from src.sprite.rotate import horizontal_symetry
 from src.exceptions.exception import JackError
-from src.utils.clock import Clock
 
 @dataclass
 class Position:
@@ -102,6 +102,13 @@ class BaseDrawable(MinimalObject):
         elif path:
             self.load_from_file(path)
 
+    def horizontal_rotate(self):
+        """
+            It makes a horizontal symetry with the sprite
+        """
+
+        self.content = horizontal_symetry(self.content)
+
     def load(self, data: json):
         """
             Load properties by setting up attributes the class
@@ -168,14 +175,8 @@ class Sprite(BaseDrawable):
         self.name = NeedLoad(str)
         self.color = NeedLoad(int)
         self.on_ground = NeedLoad(bool, False)
+
         super().__init__(**kwargs)
-
-    def horizontal_rotate(self):
-        """
-            It makes a horizontal symetry with the sprite
-        """
-
-        self.content = horizontal_symetry(self.content)
 
     def move(self, x: int, y: int):
         """
@@ -226,25 +227,16 @@ class Sprite(BaseDrawable):
                 except Exception:
                     continue
 
-    def run(self, stdscr: object):
-        """
-            It's just a model, it will be override anyway
-        """
-
-        self.update(stdscr)
-        self.draw(stdscr)
-
 class Sprites(threading.Thread):
     """
         This object groups and manipulates sprites
     """
 
     def __init__(self, stdscr: object):
-        threading.Thread.__init__(self, target=self.run)
+        threading.Thread.__init__(self, target=self.update)
 
         self.objs = []
         self.stdscr = stdscr
-        self.clock = Clock(0.5)
 
     def add(self, sprite: Sprite):
         """
@@ -253,9 +245,20 @@ class Sprites(threading.Thread):
 
         self.objs.append(sprite)
 
-    def run(self):
+    def update(self):
         """
             This method will be call in the main loop every k seconds
         """
 
-        [sprite.run(self.stdscr) for sprite in self.objs]
+        while 1:
+            for sprite in self.objs:
+                sprite.update(self.stdscr)
+            sleep(0.1)
+
+    def draw(self):
+        """
+            Draw every sprite in this group
+        """
+
+        for sprite in self.objs:
+            sprite.draw(self.stdscr)

@@ -119,14 +119,6 @@ class Pet(Sprite):
         elif self.pos.y > self.next_pos.y:
             self.pos.y -= 1
 
-    def run(self, stdscr: object):
-        """
-            Pet main function, overriding the run method from Sprite class
-        """
-
-        self.update(stdscr)
-        self.draw(stdscr)
-
 class Pets(Sprites):
     """
         This objects manages a group of pets, its a kind of pool

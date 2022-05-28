@@ -2,6 +2,7 @@
 
 import curses
 import os
+import signal
 from sys import stderr, exit
 from datetime import datetime
 
@@ -172,8 +173,9 @@ class JackSaver(Binds):
 
         self.stdscr.clear()
 
-        self.run_threads()
         self.update()
+        for drawable_group in self.drawables_groups:
+            drawable_group.draw()
         self.boxes.run()
 
         self.stdscr.refresh()
@@ -190,6 +192,7 @@ class JackSaver(Binds):
         self.stdscr.keypad(False)
         curses.echo()
 
+        self.run_threads()
         self.loop_func = RepeatFunc(n, self.loop)
 
         while 1:
@@ -199,12 +202,14 @@ class JackSaver(Binds):
             if key == "q":
                 exit()
 
-    def leave(self) -> int:
+    def leave(self):
         """
             Kill process
         """
 
         self.loop_func.stop()
+        for x in self.drawables_groups:
+            x._stop()
 
     def run_threads(self):
         """
@@ -212,7 +217,8 @@ class JackSaver(Binds):
             It will executes it
         """
 
-        [thread.run() for thread in self.drawables_groups]
+        for thread in self.drawables_groups:
+            thread.start()
 
 def main(stdscr: object):
     """
