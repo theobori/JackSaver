@@ -55,6 +55,7 @@ class JackSaver(Binds):
         self.add_bind("a", self.boxes.move_selected, self.stdscr, -1, 0)
         self.add_bind("w", self.boxes.move_selected, self.stdscr, 0, -1)
         self.add_bind("s", self.boxes.move_selected, self.stdscr, 0, 1)
+        self.add_bind("r", self.boxes.reset_selected)
         self.add_bind("n", self.boxes.select_next)
 
     def init_sprites(self):

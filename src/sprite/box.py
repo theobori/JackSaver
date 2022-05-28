@@ -160,6 +160,16 @@ class Boxes:
         
         self.selected.switch()
 
+    def reset_selected(self):
+        """
+            Reset the selected box, it will change it position to (0, 0)
+        """
+
+        if not self.selected:
+            return
+        
+        self.selected.setPosition(0, 0)
+
     def select(self, key: Any):
         """
             Select a box
